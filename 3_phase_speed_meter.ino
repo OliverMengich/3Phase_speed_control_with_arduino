@@ -1,12 +1,24 @@
-int delayTime = 0;
+int delayTime = 10;
 int sensor_pot=A0;
 int sensor_value=0;
-#include <LiquidCrystal.h>
+//#include <LiquidCrystal.h>
+//
+//// initialize the library by associating any needed LCD interface pin
+//// with the arduino pin number it is connected to
+//const int rs = 13, en = 12, d4 = 11, d5 = 10, d6 = 9, d7 = 8;
+//LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+#include <Adafruit_GFX.h>
+#include <Adafruit_SPITFT.h>
+#include <Adafruit_SPITFT_Macros.h>
+#include <gfxfont.h>
 
-// initialize the library by associating any needed LCD interface pin
-// with the arduino pin number it is connected to
-const int rs = 13, en = 12, d4 = 11, d5 = 10, d6 = 9, d7 = 8;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+#include <Adafruit_ILI9341.h>
+#define TFT_CS    8      // TFT CS  pin is connected to arduino pin 8
+#define TFT_RST   9      // TFT RST pin is connected to arduino pin 9
+#define TFT_DC    10     // TFT DC  pin is connected to arduino pin 10
+// initialize ILI9341 TFT library
+int delayTime = 10;
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 void setup() {
   // put your setup code here, to run once:
   pinMode(1,OUTPUT);
@@ -16,15 +28,20 @@ void setup() {
   pinMode(5,OUTPUT);
   pinMode(6,OUTPUT);
   pinMode(sensor_pot,INPUT);
-  lcd.begin(16, 2);
+  pinMode(A2,INPUT);
+  pinMode(A3,INPUT);
+  pinMode(A4,INPUT);
+  tft.begin();
   // Print a message to the LCD.
-  lcd.print("hello, world!");
+  delay(500);
+  textToPrint();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  sensor_value = analogRead(sensor_pot);
-  delayTime = map(sensor_value,0,1023,0,255);
+  //sensor_value = analogRead(sensor_pot);
+  //delayTime = map(sensor_value,0,1023,0,255);
+  
   lcd.setCursor(0,1);
   lcd.clear();
   lcd.print(delayTime);
@@ -65,4 +82,12 @@ void loop() {
   digitalWrite(5,HIGH);
   digitalWrite(3,LOW);
   delay(delayTime);
+}
+unsigned long textToPrint(){
+  unsigned long start = micros();
+  tft.setCursor(0, 0);
+  tft.setTextSize(3);
+  tft.println("Hello World!");
+  tft.println("Done printing");
+  return micros() - start;
 }
