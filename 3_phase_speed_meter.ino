@@ -1,24 +1,22 @@
-int delayTime = 10;
+int delayTime = 0;
 int sensor_pot = A0;
 int currSensor1_pot = A2;
 int currSensor2_pot = A3;
 int currSensor3_pot = A4;
+int voltage_sensor_pot = A5;
 int sensor_value=0;
 float current_value=0;
 bool pressed = false;
-int button = 12;
-#include <Adafruit_GFX.h>
-#include <Adafruit_SPITFT.h>
-#include <Adafruit_SPITFT_Macros.h>
-#include <gfxfont.h>
+int button = 0;
+#include <LiquidCrystal.h>
+#define RS 13
+#define EN 12
+#define D4 11
+#define D5 10
+#define D6 9
+#define D7 8
+LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
 
-#include <Adafruit_ILI9341.h>
-#define TFT_CS    8      // TFT CS  pin is connected to arduino pin 8
-#define TFT_RST   9      // TFT RST pin is connected to arduino pin 9
-#define TFT_DC    10     // TFT DC  pin is connected to arduino pin 10
-// initialize ILI9341 TFT library
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
-unsigned long textToPrint();
 void start_motor();
 void stop_motor();
 void setup() {
@@ -30,46 +28,52 @@ void setup() {
   pinMode(5,OUTPUT);
   pinMode(6,OUTPUT);
   
-  pinMode(currSensor1_pot,INPUT);
+  //pinMode(currSensor1_pot,INPUT);
   pinMode(currSensor2_pot,INPUT);
   pinMode(currSensor3_pot,INPUT);
   pinMode(sensor_pot,INPUT);
   pinMode(button, INPUT_PULLUP);
   
-  tft.begin();
+  lcd.begin(16, 2);
    //Print a message to the LCD.
+  
+  lcd.setCursor(0,0);
+  lcd.print("Smart Energy Meter");
   delay(500);
-  textToPrint();
+  
 }
 void loop(){
-   if(digitalRead(button) == HIGH){
-     tft.setCursor(0, 4);
-     tft.setTextSize(1);
-     tft.println("Boot Button pressed");
-     
-     pressed = !pressed;
-     tft.println(pressed);
-   }
-   while(digitalRead(button) == HIGH);
-   delay(20);
-   if(pressed == true){
-     //start the motor WRITE A HIGH TO THE PINS
-      tft.setTextSize(1);
-      tft.println("Motor on");
-      start_motor();
-   }
-   if(pressed == false){
-     // stop the motor. WRITE A LOW TO ALL THE PINS
-     tft.setTextSize(1);
-     tft.println("Motor Off");
-     stop_motor();
-   }
+   start_motor();
 }
+//void loop(){
+//   if(digitalRead(button) == HIGH){
+//     tft.setCursor(0, 4);
+//     tft.setTextSize(1);
+//     tft.println("Boot Button pressed");
+//     
+//     pressed = !pressed;
+//     tft.println(pressed);
+//   }
+//   while(digitalRead(button) == HIGH);
+//   delay(20);
+//   if(pressed == true){
+//     //start the motor WRITE A HIGH TO THE PINS
+//      tft.setTextSize(1);
+//      tft.println("Motor on");
+//      start_motor();
+//   }
+//   if(pressed == false){
+//     // stop the motor. WRITE A LOW TO ALL THE PINS
+//     tft.setTextSize(1);
+//     tft.println("Motor Off");
+//     stop_motor();
+//   }
+//}
 
 void start_motor() {
   // put your main code here, to run repeatedly:
-//  sensor_value = analogRead(sensor_pot);
-//  delayTime = map(sensor_value,0,1023,0,255);
+  sensor_value = analogRead(sensor_pot);
+  delayTime = map(sensor_value,0,1023,0,255);
   
   //1 5 6
   digitalWrite(1,HIGH);
@@ -108,7 +112,7 @@ void start_motor() {
   digitalWrite(3,LOW);
   delay(delayTime);
 
-  //take_Current_Value();
+  take_Current_Value();
 }
 void stop_motor(){
   digitalWrite(1,LOW);
@@ -122,17 +126,13 @@ void take_Current_Value(){
    float sensor1_value = analogRead(currSensor1_pot);
    float sensor2_value = analogRead(currSensor2_pot);
    float sensor3_value = analogRead(currSensor3_pot);
+   float voltage_value = analogRead(voltage_sensor_pot);
+   float average_value = (sensor1_value + sensor2_value + sensor3_value)/3 ;
+   lcd.clear();
+   lcd.setCursor(0,1);
+   lcd.print(average_value);
+   lcd.print("A ");
+   lcd.print(voltage_value);
+   lcd.print("V");
    
-   //tft.clear();
-   tft.println(sensor1_value);
-   tft.println(sensor2_value);
-   tft.println(sensor3_value);
-}
-unsigned long textToPrint(){
-  unsigned long start = micros();
-  tft.setCursor(0, 4);
-  tft.setTextSize(2);
-  tft.println("Hello World!");
-  tft.println("Done printing");
-  return micros() - start;
 }
