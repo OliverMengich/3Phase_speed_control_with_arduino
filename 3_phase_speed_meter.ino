@@ -5,6 +5,7 @@ int voltage_sensor_pot = A5;
 int sensor_value=0;
 float current_value=0;
 bool pressed = false;
+bool started = false;
 int button = 0;
 
 int sensitivity = 66;
@@ -51,26 +52,32 @@ void setup() {
 //   start_motor();
 //}
 void loop(){
+  // if LOAD is not started. Press the the start button
+  if(started == false){
+    lcd.print("Press Start Button");
+   }
+   //listening for the start button pressed
    if(digitalRead(button) == HIGH){
-     lcd.setCursor(0, 1);
+     lcd.setCursor(0, 0);
      lcd.print("Boot Button pressed");
      delay(1000);
      lcd.clear();
      pressed = !pressed;
-     if(pressed == true) {lcd.print("Motor ON"); delay(1000); lcd.clear(); }
-     if(pressed ==false) {lcd.print("Motor Off"); delay(1000); lcd.clear(); }
+     started = !started;
+     if(pressed == true) {lcd.setCursor(0, 1); lcd.print("Motor ON"); delay(1000); lcd.clear(); } // if start button pressed display on the LED that it is on
+     if(pressed ==false) {lcd.setCursor(0, 1); lcd.print("Motor Off"); delay(1000); lcd.clear(); } // if stop button pressed display on the LED that it is ff
    }
    while(digitalRead(button) == HIGH);
    delay(20);
+   // starts the motor
    if(pressed == true){
      //start the motor WRITE A HIGH TO THE PINS
       start_motor();
-      lcd.clear();
    }
+   // stop the motor
    if(pressed == false){
      // stop the motor. WRITE A LOW TO ALL THE PINS
      stop_motor();
-     lcd.clear();
    }
 }
 
@@ -116,7 +123,7 @@ void start_motor() {
   digitalWrite(3,LOW);
   delay(delayTime);
   
-  take_Current_Value();
+  //take_Current_Value();
 }
 void stop_motor(){
   digitalWrite(1,LOW);
@@ -126,32 +133,16 @@ void stop_motor(){
   digitalWrite(5,LOW);
   digitalWrite(6,LOW);
 }
-uint16_t get_max(){
-  uint16_t max_v = 0;
-  for(uint8_t i = 0; i<100; i++){
-     uint16_t r = analogRead(voltage_sensor_pot);
-     if(max_v < r) max_v = r;
-     delayMicroseconds(200);
-  }
-  return max_v;
-}
-uint32_t calculate_voltage_value(){
-   char buf[10];
-   uint32_t v = get_max();
-   v = v*1100/1023;
-   v /= sqrt(2);
-   
-}
 void take_Current_Value(){
    
    float sensor3_value = analogRead(currSensor3_pot);
    float adcVoltage = (sensor3_value / 1024.0) * 5000;
-   currentValue = ((adcVoltage - offsetVoltage ) / sensitivity);
-   float voltage_value = calculate_voltage_value();
+   currentValue = ((offsetVoltage - adcVoltage) / sensitivity);
+   float voltage_value = analogRead(voltage_sensor_pot);;
    
    lcd.clear();
    lcd.setCursor(0,0);
-   lcd.print(adcVoltage);
+   lcd.print("SMART ENERGY METER");
    lcd.setCursor(0,1);
    lcd.print(currentValue);
    lcd.print("A ");
